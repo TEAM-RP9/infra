@@ -1,0 +1,60 @@
+name: Deploy Art Bridge
+
+on:
+  push:
+    branches: ["main"]
+  workflow_dispatch:
+
+concurrency:
+  group: artbridge-production
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout infra repo
+        uses: actions/checkout@v4
+
+      - name: Start SSH agent
+        uses: webfactory/ssh-agent@v0.9.0
+        with:
+          ssh-private-key: ${{ secrets.VM_SSH_KEY }}
+
+      - name: Add VM to known_hosts
+        run: |
+          mkdir -p ~/.ssh
+          ssh-keyscan -p "${{ secrets.VM_PORT }}" -H "${{ secrets.VM_HOST }}" >> ~/.ssh/known_hosts
+
+      - name: Deploy to VM
+        run: |
+          ssh -p "${{ secrets.VM_PORT }}" "${{ secrets.VM_USER }}@${{ secrets.VM_HOST }}" '
+            set -e
+
+            cd /home/ubuntu/rp9/art-bridge-backend
+            git fetch --all
+            git checkout main
+            git pull --ff-only
+
+            cd /home/ubuntu/rp9/art-bridge-client
+            git fetch --all
+            git checkout main
+            git pull --ff-only
+
+            cd /home/ubuntu/rp9/infra
+            git fetch --all
+            git checkout main
+            git pull --ff-only
+
+            cd /home/ubuntu/rp9/infra
+            sudo docker compose up -d --build --remove-orphans
+
+            sudo docker image prune -f
+            sudo docker builder prune -f
+
+            curl -fsS http://localhost/ > /dev/null
+            curl -fsS http://localhost/api/actuator/health > /dev/null
+
+            sudo docker compose ps
+          '
