@@ -1,10 +1,3 @@
-Dev commands
-```
-sudo docker compose up -d --build --remove-orphans
-sudo docker image prune -f
-sudo docker builder prune -f
-```
-
 **Art Bridge Deployment – Infrastructure Setup Summary**
 
 Project goal: deploy the full-stack **Art Bridge photo gallery application** to a small Ubuntu VM using Docker, and verify that the infrastructure stack (frontend, backend, database, object storage, and reverse proxy) is operational so application development can continue.
