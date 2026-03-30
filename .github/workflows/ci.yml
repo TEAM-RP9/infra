@@ -16,13 +16,13 @@ jobs:
       - name: Create CI env file
         run: |
           cat > .env.ci <<'EOF'
-          POSTGRES_DB=artbridge
-          POSTGRES_USER=ab_admin
-          POSTGRES_PASSWORD=dummy-password
-          MINIO_ROOT_USER=minioadmin
-          MINIO_ROOT_PASSWORD=minioadmin123
-          MINIO_BUCKET=photos
-          PUBLIC_MEDIA_BASE_URL=http://localhost/media
+          POSTGRES_DB=${POSTGRES_DB}
+          POSTGRES_USER=${POSTGRES_USER}
+          POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+          MINIO_ROOT_USER=${MINIO_ROOT_USER}
+          MINIO_ROOT_PASSWORD=${MINIO_ROOT_PASSWORD}
+          MINIO_BUCKET=${MINIO_BUCKET}
+          PUBLIC_MEDIA_BASE_URL=${PUBLIC_MEDIA_BASE_URL}
           EOF
 
       - name: Validate compose file
