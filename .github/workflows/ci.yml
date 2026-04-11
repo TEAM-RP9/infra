@@ -13,18 +13,6 @@ jobs:
       - name: Checkout infra repo
         uses: actions/checkout@v4
 
-      - name: Checkout backend repo
-        uses: actions/checkout@v4
-        with:
-          repository: TEAM-RP9/art-bridge-backend
-          path: ../art-bridge-backend
-
-      - name: Checkout frontend repo
-        uses: actions/checkout@v4
-        with:
-          repository: TEAM-RP9/art-bridge-client
-          path: ../art-bridge-client
-
       - name: Create CI env file
         run: |
           cat > .env.ci <<EOF
@@ -36,6 +24,23 @@ jobs:
           MINIO_BUCKET=photos
           PUBLIC_MEDIA_BASE_URL=http://localhost/media
           EOF
+
+      - name: Checkout backend repo
+        uses: actions/checkout@v4
+        with:
+          repository: TEAM-RP9/art-bridge-backend
+          path: art-bridge-backend
+
+      - name: Checkout frontend repo
+        uses: actions/checkout@v4
+        with:
+          repository: TEAM-RP9/art-bridge-client
+          path: art-bridge-client
+
+      - name: Symlink repos to sibling paths compose expects
+        run: |
+          ln -s $GITHUB_WORKSPACE/art-bridge-backend $(dirname $GITHUB_WORKSPACE)/art-bridge-backend
+          ln -s $GITHUB_WORKSPACE/art-bridge-client $(dirname $GITHUB_WORKSPACE)/art-bridge-client
 
       - name: Validate compose file
         run: docker compose --env-file .env.ci config
