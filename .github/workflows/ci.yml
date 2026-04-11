@@ -30,12 +30,14 @@ jobs:
         with:
           repository: TEAM-RP9/art-bridge-backend
           path: art-bridge-backend
+          token: ${{ secrets.GH_PAT }}
 
       - name: Checkout frontend repo
         uses: actions/checkout@v4
         with:
           repository: TEAM-RP9/art-bridge-client
           path: art-bridge-client
+          token: ${{ secrets.GH_PAT }}
 
       - name: Symlink repos to sibling paths compose expects
         run: |
