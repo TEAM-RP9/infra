@@ -25,52 +25,33 @@ jobs:
           PUBLIC_MEDIA_BASE_URL=http://localhost/media
           EOF
 
-      - name: Checkout backend repo
-        uses: actions/checkout@v4
-        with:
-          repository: TEAM-RP9/art-bridge-backend
-          path: art-bridge-backend
-          token: ${{ secrets.GH_PAT }}
-
-      - name: Checkout frontend repo
-        uses: actions/checkout@v4
-        with:
-          repository: TEAM-RP9/art-bridge-client
-          path: art-bridge-client
-          token: ${{ secrets.GH_PAT }}
-
-      - name: Symlink repos to sibling paths compose expects
-        run: |
-          ln -s $GITHUB_WORKSPACE/art-bridge-backend $(dirname $GITHUB_WORKSPACE)/art-bridge-backend
-          ln -s $GITHUB_WORKSPACE/art-bridge-client $(dirname $GITHUB_WORKSPACE)/art-bridge-client
-
       - name: Validate compose file
-        run: docker compose --env-file .env.ci config
+        run: docker compose -f docker-compose.ci.yml --env-file .env.ci config
 
       - name: Build and start services
-        run: docker compose --env-file .env.ci up -d --build postgres minio backend frontend nginx
+        run: docker compose -f docker-compose.ci.yml --env-file .env.ci up -d
 
       - name: Validate nginx config inside container
-        run: docker compose --env-file .env.ci exec -T nginx nginx -t
+        run: docker compose -f docker-compose.ci.yml --env-file .env.ci exec -T nginx nginx -t
 
-      - name: Wait a bit for services
-        run: sleep 15
+      - name: Wait for services
+        run: sleep 10
 
       - name: Check frontend through nginx
         run: curl -f http://localhost/
 
-      - name: Check backend health through nginx
-        run: curl -f http://localhost/api/actuator/health
+      - name: Check backend through nginx
+        run: curl -f http://localhost/api/health
 
       - name: Show logs on failure
         if: failure()
         run: |
-          docker compose --env-file .env.ci logs --tail=200 nginx
-          docker compose --env-file .env.ci logs --tail=200 backend
-          docker compose --env-file .env.ci logs --tail=200 frontend
-          docker compose --env-file .env.ci logs --tail=200 postgres
-          docker compose --env-file .env.ci logs --tail=200 minio
+          docker compose -f docker-compose.ci.yml --env-file .env.ci logs --tail=200 nginx
+          docker compose -f docker-compose.ci.yml --env-file .env.ci logs --tail=200 backend
+          docker compose -f docker-compose.ci.yml --env-file .env.ci logs --tail=200 frontend
+          docker compose -f docker-compose.ci.yml --env-file .env.ci logs --tail=200 postgres
+          docker compose -f docker-compose.ci.yml --env-file .env.ci logs --tail=200 minio
 
       - name: Tear down
         if: always()
-        run: docker compose --env-file .env.ci down -v
+        run: docker compose -f docker-compose.ci.yml --env-file .env.ci down -v
