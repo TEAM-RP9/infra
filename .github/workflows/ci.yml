@@ -13,6 +13,18 @@ jobs:
       - name: Checkout infra repo
         uses: actions/checkout@v4
 
+      - name: Checkout backend repo
+        uses: actions/checkout@v4
+        with:
+          repository: TEAM-RP9/art-bridge-backend
+          path: ../art-bridge-backend
+
+      - name: Checkout frontend repo
+        uses: actions/checkout@v4
+        with:
+          repository: TEAM-RP9/art-bridge-client
+          path: ../art-bridge-client
+
       - name: Create CI env file
         run: |
           cat > .env.ci <<EOF
