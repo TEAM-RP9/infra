@@ -25,12 +25,33 @@ jobs:
           PUBLIC_MEDIA_BASE_URL=http://localhost/media
           EOF
 
-      - name: Validate docker-compose syntax
-        run: docker compose --env-file .env.ci config
+      - name: Validate compose file
+        run: docker compose -f docker-compose.ci.yml --env-file .env.ci config
 
-      - name: Validate nginx config (syntax only)
+      - name: Build and start services
+        run: docker compose -f docker-compose.ci.yml --env-file .env.ci up -d
+
+      - name: Validate nginx config inside container
+        run: docker compose -f docker-compose.ci.yml --env-file .env.ci exec -T nginx nginx -t
+
+      - name: Wait for services
+        run: sleep 10
+
+      - name: Check frontend through nginx
+        run: curl -f http://localhost/
+
+      - name: Check backend through nginx
+        run: curl -f http://localhost/api/health
+
+      - name: Show logs on failure
+        if: failure()
         run: |
-          docker run --rm \
-            -v "$PWD/nginx.conf:/etc/nginx/conf.d/default.conf:ro" \
-            nginx:1.27-alpine \
-            sh -c "nginx -t || exit 1"
+          docker compose -f docker-compose.ci.yml --env-file .env.ci logs --tail=200 nginx
+          docker compose -f docker-compose.ci.yml --env-file .env.ci logs --tail=200 backend
+          docker compose -f docker-compose.ci.yml --env-file .env.ci logs --tail=200 frontend
+          docker compose -f docker-compose.ci.yml --env-file .env.ci logs --tail=200 postgres
+          docker compose -f docker-compose.ci.yml --env-file .env.ci logs --tail=200 minio
+
+      - name: Tear down
+        if: always()
+        run: docker compose -f docker-compose.ci.yml --env-file .env.ci down -v
