@@ -15,6 +15,11 @@ services:
       interval: 5s
       timeout: 3s
       retries: 20
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
 
   minio:
     image: minio/minio:latest
@@ -27,6 +32,11 @@ services:
       - miniodata:/data
     networks:
       - artbridge-net
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
 
   minio-init:
     image: minio/mc:latest
@@ -46,6 +56,11 @@ services:
       "
     networks:
       - artbridge-net
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "5m"
+        max-file: "2"
 
   backend:
     build:
@@ -68,6 +83,11 @@ services:
         condition: service_completed_successfully
     networks:
       - artbridge-net
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
 
   frontend:
     build:
@@ -80,6 +100,11 @@ services:
       - backend
     networks:
       - artbridge-net
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
 
   nginx:
     image: nginx:1.27-alpine
@@ -94,6 +119,11 @@ services:
       - ./nginx.conf:/etc/nginx/conf.d/default.conf:ro
     networks:
       - artbridge-net
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
 
 volumes:
   pgdata:

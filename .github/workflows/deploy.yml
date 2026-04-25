@@ -33,6 +33,21 @@ jobs:
           ssh -p "${{ secrets.VM_PORT }}" "${{ secrets.VM_USER }}@${{ secrets.VM_HOST }}" '
             set -e
 
+            FREE_GB=$(df -BG /var/lib/docker 2>/dev/null | awk "NR==2{gsub(\"G\",\"\"); print \$4}" || df -BG / | awk "NR==2{gsub(\"G\",\"\"); print \$4}")
+            echo "Free disk space before cleanup: ${FREE_GB}GB"
+
+            sudo docker container prune -f
+            sudo docker image prune -f
+            sudo docker builder prune -a -f
+
+            FREE_GB=$(df -BG /var/lib/docker 2>/dev/null | awk "NR==2{gsub(\"G\",\"\"); print \$4}" || df -BG / | awk "NR==2{gsub(\"G\",\"\"); print \$4}")
+            echo "Free disk space after cleanup: ${FREE_GB}GB"
+            if [ "${FREE_GB}" -lt "2" ]; then
+              echo "ERROR: Less than 2 GB free after cleanup. Aborting to prevent disk exhaustion."
+              df -h /
+              exit 1
+            fi
+
             cd /home/ubuntu/rp9/art-bridge-backend
             git fetch --all
             git checkout main
@@ -51,8 +66,8 @@ jobs:
             cd /home/ubuntu/rp9/infra
             sudo docker compose up -d --build --remove-orphans
 
-            sudo docker image prune -f
-            sudo docker builder prune -f
+            sudo docker image prune -a -f
+            sudo docker builder prune -a -f
 
             curl -fsS http://localhost/ > /dev/null
             curl -fsS http://localhost/api/actuator/health > /dev/null
