@@ -30,6 +30,8 @@ services:
       MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD}
     volumes:
       - miniodata:/data
+    ports:
+      - "127.0.0.1:9001:9001"
     networks:
       - artbridge-net
     logging:
