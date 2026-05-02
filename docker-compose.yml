@@ -97,10 +97,12 @@ services:
     build:
       context: ../art-bridge-client
       dockerfile: Dockerfile
+      args:
+        - NEXT_PUBLIC_GOOGLE_CLIENT_ID=${NEXT_PUBLIC_GOOGLE_CLIENT_ID}
     container_name: artbridge-frontend
     environment:
       NEXT_PUBLIC_API_BASE: /api
-      BACKEND_API_URL: http://backend:8080
+      BACKEND_API_URL: http://artbridge-backend:8080
       NEXT_PUBLIC_GOOGLE_CLIENT_ID: ${NEXT_PUBLIC_GOOGLE_CLIENT_ID}
     depends_on:
       - backend
@@ -120,7 +122,7 @@ services:
       - frontend
       - minio
     ports:
-      - "80:80"
+      - "8081:80"
     volumes:
       - ./nginx.conf:/etc/nginx/conf.d/default.conf:ro
     networks:
